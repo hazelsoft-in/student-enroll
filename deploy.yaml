@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-enroll
+  labels:
+    app: student-enroll
+spec:
+  selector:
+    matchLabels:
+      app: student-enroll
+  template:
+    metadata:
+      labels:
+        app: student-enroll
+    spec:
+      securityContext:
+        runAsUser: 1000
+      containers:
+        - name: student-enroll
+          image: sandeeplv/student-enroll:v1
+          #imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 9
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 9
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: student-enroll-service
+  labels:
+    app: student-enroll-service
+spec:
+  selector:
+    app: student-enroll
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
